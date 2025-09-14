@@ -47,8 +47,8 @@ This project provides a complete enterprise-ready storage and analytics stack us
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd testMinio-elastic-mongoDB
+   git clone https://github.com/RBen19/Minio-elastic-mongoDB.git
+   cd Minio-elastic-mongoDB
    ```
 
 2. **Start the services**
