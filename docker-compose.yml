@@ -1,0 +1,157 @@
+services:
+  # MinIO Object Storage Service
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_API_PORT}:9000"     # MinIO API port
+      - "${MINIO_CONSOLE_PORT}:9001"     # MinIO Console port
+    environment:
+      # MinIO root credentials
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # Console configuration
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "${MONGODB_PORT}:27017"   # MongoDB default port
+    environment:
+      # MongoDB root credentials
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch Search Engine Service
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    container_name: elasticsearch
+    restart: unless-stopped
+    ports:
+      - "${ELASTICSEARCH_HTTP_PORT}:9200"     # Elasticsearch HTTP port
+      - "${ELASTICSEARCH_TRANSPORT_PORT}:9300"     # Elasticsearch transport port
+    environment:
+      # Single-node configuration
+      discovery.type: ${DISCOVERY_TYPE}
+      # Disable security for dev
+      xpack.security.enabled: ${XPACK_SECURITY_ENABLED}
+      xpack.security.enrollment.enabled: ${XPACK_SECURITY_ENROLLMENT_ENABLED}
+      # Memory settings
+      ES_JAVA_OPTS: ${ES_JAVA_OPTS}
+      # Disable machine learning to reduce resource usage
+      xpack.ml.enabled: ${XPACK_ML_ENABLED}
+      # Network configuration
+      network.host: ${NETWORK_HOST}
+      # HTTP settings
+      http.port: 9200
+      # Bootstrap memory lock 
+      bootstrap.memory_lock: ${BOOTSTRAP_MEMORY_LOCK}
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ulimits:
+      # Memory lock limit (required for bootstrap.memory_lock)
+      memlock:
+        soft: -1
+        hard: -1
+      # File descriptor limit
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kibana Dashboard for Elasticsearch
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.3
+    container_name: kibana
+    restart: unless-stopped
+    ports:
+      - "${KIBANA_PORT}:5601"     # Kibana web interface port
+    environment:
+      # Elasticsearch connection
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      # Kibana server configuration
+      SERVER_NAME: ${KIBANA_SERVER_NAME}
+      SERVER_HOST: ${KIBANA_SERVER_HOST}
+      # Disable security for development
+      XPACK_SECURITY_ENABLED: ${XPACK_SECURITY_ENABLED}
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_ENCRYPTION_KEY}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Mongo Express Web GUI for MongoDB
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - "${MONGO_EXPRESS_PORT}:8081"   # Mongo Express web interface port
+    environment:
+      # MongoDB connection settings
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      # Mongo Express authentication
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
+      # Site configuration
+      ME_CONFIG_SITE_BASEURL: ${MONGO_EXPRESS_BASEURL}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Named volumes for data persistence
+volumes:
+  # MinIO data storage
+  minio_data:
+    driver: local
+  # MongoDB data and configuration storage
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  # Elasticsearch data storage
+  elasticsearch_data:
+    driver: local
+
+# Network configuration (optional - services can communicate via service names)
+networks:
+  default:
+    name: storage_project_stack
+    driver: bridge
