@@ -285,5 +285,3 @@ Utilisez les commandes du fichier `check-containers.md` pour vérifier le bon fo
 This project is open source and available under the [MIT License](LICENSE).
 
 ---
-
-**Built with ❤️ for enterprise data management**
