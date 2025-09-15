@@ -153,5 +153,5 @@ volumes:
 # Network configuration (optional - services can communicate via service names)
 networks:
   default:
-    name: storage_project_stack
+    name: ${NETWORK_NAME}
     driver: bridge

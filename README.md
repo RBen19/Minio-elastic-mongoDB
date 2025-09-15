@@ -15,6 +15,7 @@
 ### 📋 Overview
 
 This project provides a complete enterprise-ready storage and analytics stack using Docker Compose. It includes object storage, document database, search engine, and administrative web interfaces.
+Make sure to read the all file before process to use 
 
 ### 🏗️ Architecture
 
@@ -187,7 +188,7 @@ curl -I http://localhost:8081
 
 ### 📋 Aperçu
 
-Ce projet fournit une stack complète de stockage et d'analyse prête pour l'entreprise utilisant Docker Compose. Il inclut le stockage d'objets, une base de données documentaire, un moteur de recherche et des interfaces web d'administration.
+Ce projet fournit une stack complète de stockage et d'analyse prête pour l'entreprise utilisant Docker Compose. Il inclut le stockage d'objets, une base de données documentaire, un moteur de recherche et des interfaces web d'administration. Assurez vous de lire toute la documentation avant d'utiliser 
 
 ### 🏗️ Architecture
 
@@ -202,8 +203,8 @@ La stack est composée de 5 services interconnectés :
 
 1. **Cloner le dépôt**
    ```bash
-   git clone <url-du-depot>
-   cd testMinio-elastic-mongoDB
+   git clone https://github.com/RBen19/Minio-elastic-mongoDB.git
+   cd Minio-elastic-mongoDB
    ```
 
 2. **Démarrer les services**
