@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.yml convert
+    kompose.version: 1.36.0 (ae2a39403)
+  labels:
+    io.kompose.service: mongo-express
+  name: mongo-express
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mongo-express
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f docker-compose.yml convert
+        kompose.version: 1.36.0 (ae2a39403)
+      labels:
+        io.kompose.service: mongo-express
+    spec:
+      priorityClassName: low-priority-ui
+      containers:
+        - env:
+            - name: ME_CONFIG_BASICAUTH_PASSWORD
+              value: adminpass123
+            - name: ME_CONFIG_BASICAUTH_USERNAME
+              value: admin
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              value: adminpass123
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              value: admin123
+            - name: ME_CONFIG_MONGODB_SERVER
+              value: mongodb
+            - name: ME_CONFIG_MONGODB_URL
+              value: mongodb://admin123:adminpass123@mongodb:27017/
+            - name: ME_CONFIG_SITE_BASEURL
+              value: /
+          image: mongo-express:1.0.2
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - --quiet
+                - --tries=1
+                - --spider
+                - http://localhost:8081
+            initialDelaySeconds: 60
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: mongo-express
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "100m"
+      restartPolicy: Always

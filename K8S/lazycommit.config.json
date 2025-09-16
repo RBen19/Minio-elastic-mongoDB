@@ -1,0 +1,11 @@
+{
+  "folders": {
+    "K8S": "K8S",
+    "K8S/elasticsearch": "elasticsearch",
+    "K8S/kibana": "kibana",
+    "K8S/minio": "minio",
+    "K8S/mongoDB": "mongoDB",
+    "K8S/mongo-express": "mongo-express",
+    "tests": "tests"
+  }
+}

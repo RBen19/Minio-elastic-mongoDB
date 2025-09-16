@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -f docker-compose.yml convert
+    kompose.version: 1.36.0 (ae2a39403)
+  labels:
+    io.kompose.service: mongodb
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mongodb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose -f docker-compose.yml convert
+        kompose.version: 1.36.0 (ae2a39403)
+      labels:
+        io.kompose.service: mongodb
+    spec:
+      priorityClassName: high-priority-data
+      containers:
+        - env:
+            - name: MONGO_INITDB_DATABASE
+              value: store
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: adminpass123
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin123
+          image: mongo:7.0
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - db.adminCommand('ping')
+            failureThreshold: 3
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: mongodb
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongodb-data
+            - mountPath: /data/configdb
+              name: mongodb-config
+      restartPolicy: Always
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-data
+        - name: mongodb-config
+          persistentVolumeClaim:
+            claimName: mongodb-config

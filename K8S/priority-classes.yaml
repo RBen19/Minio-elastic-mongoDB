@@ -1,0 +1,26 @@
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority-data
+value: 1000
+globalDefault: false
+description: "Haute priorité pour les services de données critiques (Elasticsearch, MongoDB, MinIO)"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: medium-priority-data
+value: 500
+globalDefault: false
+description: "Priorité moyenne pour les services de données secondaires"
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low-priority-ui
+value: 100
+globalDefault: false
+description: "Basse priorité pour les interfaces utilisateur (Kibana, MongoDB Express)"
