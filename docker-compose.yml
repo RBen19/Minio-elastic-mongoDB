@@ -136,6 +136,71 @@ services:
       timeout: 10s
       retries: 3
 
+  # PostgreSQL 17 Database Service for Keycloak
+  keycloak_db:
+    image: postgres:17
+    container_name: keycloak_db
+    restart: unless-stopped
+    ports:
+      - "${POSTGRESQL_PORT}:5432"
+    environment:
+      # PostgreSQL configuration
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # PostgreSQL locale configuration
+      POSTGRES_INITDB_ARGS: ${POSTGRES_INITDB_ARGS}
+      # PostgreSQL connection settings
+      POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD}
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Keycloak Identity and Access Management Service
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    restart: unless-stopped
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    environment:
+      # Keycloak admin credentials
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      # Database configuration
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak_db
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: ${KC_DB_NAME}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      # Keycloak configuration
+      KC_HOSTNAME: ${KC_HOSTNAME}
+      KC_HOSTNAME_PORT: ${KC_HOSTNAME_PORT}
+      KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
+      KC_HOSTNAME_STRICT_HTTPS: ${KC_HOSTNAME_STRICT_HTTPS}
+      KC_HTTP_ENABLED: ${KC_HTTP_ENABLED}
+      # Health and metrics
+      KC_HEALTH_ENABLED: ${KC_HEALTH_ENABLED}
+      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED}
+      # Cache configuration
+      KC_CACHE: ${KC_CACHE}
+      KC_CACHE_STACK: ${KC_CACHE_STACK}
+    command: start-dev
+    depends_on:
+      keycloak_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
 # Named volumes for data persistence
 volumes:
   # MinIO data storage
@@ -148,6 +213,9 @@ volumes:
     driver: local
   # Elasticsearch data storage
   elasticsearch_data:
+    driver: local
+  # PostgreSQL data storage
+  postgresql_data:
     driver: local
 
 # Network configuration (optional - services can communicate via service names)
