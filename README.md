@@ -28,9 +28,9 @@
 - [🚀 Deployment Guide](#deployment-guide)
 - [🔧 Resource Management](#resource-management--configuration)
 - [🌐 Service Access](#service-access--networking)
-- [📊 Monitoring & Debugging](#operations--maintenance)
+- [📊 Monitoring & Debugging](#monitoring-and-debugging)
 - [🔍 Commands Reference](#useful-commands-reference)
-- [🔒 Production Optimization](#production-readiness)
+- [🔒 Production Optimization](#production-optimization)
 
 ### 🇫🇷 Documentation Française
 - [📋 Aperçu](#aperçu)
@@ -42,8 +42,8 @@
 - [🔒 Sécurité Production](#notes-de-sécurité-pour-la-production)
 
 ### ☸️ Documentation Kubernetes (FR)
-- [📋 Qu'est-ce que Kubernetes ?](#quest-ce-que-kubernetes-)
-- [🎯 Pourquoi Kubernetes ?](#pourquoi-utiliser-kubernetes-pour-cette-stack-)
+- [📋 Qu'est-ce que Kubernetes ?](#quest-ce-que-kubernetes)
+- [🎯 Pourquoi Kubernetes ?](#pourquoi-utiliser-kubernetes-pour-cette-stack)
 - [🛠️ Prérequis & Outils](#prérequis-et-outils)
 - [🚀 Guide de Déploiement](#démarrage-rapide-avec-minikube)
 - [🔧 Gestion des Ressources](#allocation-des-ressources)
